@@ -1,0 +1,34 @@
+name: run_tests
+
+on: [push, pull_request]
+
+env:
+  WANDB_MODE: disabled
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{matrix.python-version}}
+      - name: Run tests
+        run: |
+          pip install poetry
+          poetry config installer.modern-installation false
+          poetry install
+      - name: Free Up GitHub Actions Ubuntu Runner Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # This might remove tools that are actually needed, if set to "true" but frees about 6 GB
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
+      - name: Run tests
+        run: poetry run pytest
